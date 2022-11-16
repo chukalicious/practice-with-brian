@@ -1,3 +1,3 @@
-# Server Boiler-plating with Postgres
+# Connecting PG
 
 Server setup to use Postgres database
