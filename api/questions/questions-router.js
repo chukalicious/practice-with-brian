@@ -1,12 +1,13 @@
+const Questions = require("./questions-model");
 const express = require("express");
 
-const server = express();
+const router = express.Router();
 
-server.use(express.json());
-
-const Questions = require("./api/questions/questions-model");
-
-server.get("/questions", (req, res) => {
+router.get("/questions", (req, res) => {
+  // inside the body req.body
+  // inside parameters of the path req.params
+  // inside the query string req.query
+  // inside a header req.headers
   Questions.find()
     .then((questions) => {
       res.status(200).json(questions);
@@ -19,8 +20,8 @@ server.get("/questions", (req, res) => {
     });
 });
 
-server.get("/questions/:id", (req, res) => {
-  Questions.findById(req.params.id)
+router.get("/:id", (req, res) => {
+  Adopter.findById(req.params.id)
     .then((question) => {
       if (question) {
         res.status(200).json(question);
@@ -31,14 +32,13 @@ server.get("/questions/:id", (req, res) => {
     .catch((error) => {
       console.log(error);
       res.status(500).json({
-        message: "Error retrieving the question",
+        message: "Error retrieving the adopter",
       });
     });
 });
 
-server.post("/questions/add", (req, res) => {
+router.post("/questions/add", (req, res) => {
   const body = req.body;
-  console.log(body);
   Questions.add(body)
     .then((body) => {
       if (body.question && body.answer && body.detail && body.point) {
@@ -58,7 +58,7 @@ server.post("/questions/add", (req, res) => {
     });
 });
 
-server.delete("/questions/:id", (req, res) => {
+router.delete("/:id", (req, res) => {
   Questions.remove(req.params.id)
     .then((count) => {
       if (count > 0) {
@@ -75,13 +75,24 @@ server.delete("/questions/:id", (req, res) => {
     });
 });
 
-server.put("/questions/:id", (req, res) => {
+router.put("/:id", (req, res) => {
   const changes = req.body;
-  console.log("changes: ", changes);
-  const { id } = req.params;
+  const id = req.params.id;
   Questions.update(id, changes)
     .then((changes) => {
-      res.status(201).json(changes);
+      if (
+        changes.question &&
+        changes.answer &&
+        changes.detail &&
+        changes.point
+      ) {
+        res.status(201).json(changes);
+      } else {
+        res.status(400).json({
+          message:
+            "The question body must contain a question, an answer, a justification for the answer, and a points number",
+        });
+      }
     })
     .catch((error) => {
       console.log(error);
@@ -91,14 +102,4 @@ server.put("/questions/:id", (req, res) => {
     });
 });
 
-// OTHER ENDPOINTS
-server.get("/", (req, res) => {
-  res.send(`
-    <h2>Pride and Prejudice Trivia API</h2>
-    <p>Have fun!</p>
-  `);
-});
-
-server.listen(4000, () => {
-  console.log("\n*** Server Running on http://localhost:4000 ***\n");
-});
+module.exports = router;
